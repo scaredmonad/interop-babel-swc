@@ -1,35 +1,11 @@
-# tsdev
+# interop-babel-swc
 
-**tsdev** is a minimal starter for Node libraries written in TypeScript that target ESM.
+**interop-babel-swc** ensures interoperability between ASTs generated/consumed by both Babel and SWC for acheiving faster compilation.
 
-**tsdev** uses [esbuild](https://esbuild.github.io/) to compile and bundle the library (during the `build` command).
+## Motivation
 
-**tsdev** uses the [uvu](https://github.com/lukeed/uvu) testing library to run tests via [ts-node](https://typestrong.org/ts-node/).
+With the current trend of native build tools paving way into our everyday toolchains like Next.js, a rather persistant issue is losing out on Babel plugins for critical transformation.
 
-**tsdev** uses [pnpm](https://pnpm.io/) for faster package management.
+Meta-build tools like Create React App and Gatsby have a hardline dependency on Babel, which is notorious for ridiculously-slow compile times.
 
-## Commands
-
-### Installing
-
-The development dependencies include `uvu`, `typescript`, `ts-node` and `@types/node`. I have esbuild installed globally to use across different projects.
-
-```$
-$ pnpm install
-```
-
-### Building
-
-Runs esbuild on `./src/index.ts` and outputs to `./lib/index.js`.
-
-```$
-$ pnpm build
-```
-
-### Running tests
-
-Runs ts-node on `./tests/index.ts` directly.
-
-```$
-$ pnpm test
-```
+With that being highlighted, interop-babel-swc delegates parsing and code generation to SWC. Ultimately, Babel-based setups should build faster, which places the focus on the accuracy of interoperability.
