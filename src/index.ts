@@ -4,11 +4,6 @@ import {
   ParseOptions,
   Module,
   Identifier,
-  NumericLiteral,
-  IfStatement,
-  VariableDeclaration,
-  ExpressionStatement,
-  AssignmentExpression,
   parseSync,
   transformSync as transformMorphedAST,
 } from "@swc/core";
@@ -30,37 +25,18 @@ export interface InteropConfig {
 const { default: Visitor } = SWCVisitor;
 
 class InteropVisitor extends Visitor {
-  // Refer to https://github.com/swc-project/plugin-strip-console/issues/2
-  visitVariableDeclaration(v: VariableDeclaration): VariableDeclaration {
-    interop_mapSpanToLocObject(v);
-    return super.visitVariableDeclaration(v);
-  }
-
   visitIdentifier(ident: Identifier): Identifier {
     interop_mapSpanToLocObject(ident);
     interop_morphIdentifier(ident);
     return ident;
   }
 
-  visitNumericLiteral(lit: NumericLiteral): NumericLiteral {
-    interop_mapSpanToLocObject(lit);
-    return lit;
+  visitBlockStatement(stmt: BlockStatement): BlockStatement {
+    interop_mapSpanToLocObject(stmt);
+    stmt.body = stmt.stmts;
+    // delete stmt.stmts;
+    return super.visitBlockStatement(stmt);
   }
-
-  // @TODO: Note this pattern. Reduce this redundancy by either:
-  //    1 - Attaching common methods dynamically (via a constructor).
-  //    2 - Using decorators.
-  // visitAssignmentExpression(
-  //   a_expr: AssignmentExpression
-  // ): AssignmentExpression {
-  //   interop_mapSpanToLocObject(a_expr);
-  //   return super.visitAssignmentExpression(a_expr);
-  // }
-
-  // visitIfStatement(stmt: IfStatement): IfStatement {
-  //   interop_mapSpanToLocObject(stmt);
-  //   return super.visitIfStatement(stmt);
-  // }
 
   constructor() {
     super();
@@ -69,11 +45,14 @@ class InteropVisitor extends Visitor {
       "AssignmentExpression",
       "IfStatement",
       "BinaryExpression",
+      "NumericLiteral",
+      "VariableDeclaration",
     ];
 
     for (const tt of similarNodes) {
       this[`visit${tt}`] = (node: any): any => {
         interop_mapSpanToLocObject(node);
+        // Refer to https://github.com/swc-project/plugin-strip-console/issues/2
         return super[`visit${tt}`](node);
       };
     }
