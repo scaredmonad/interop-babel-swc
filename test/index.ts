@@ -3,9 +3,9 @@ import { test } from "uvu";
 // import * as assert from "uvu/assert";
 import { transformSync } from "../src/index.js";
 
-const src = `const a = 5;`;
+const src = `const digit = 5;`;
 
-function logger(babel: any) {
+function loggerPluggin(babel: any) {
   const { types: t, traverse } = babel;
 
   return {
@@ -18,13 +18,25 @@ function logger(babel: any) {
   };
 }
 
+function renameIdentifiersPlugin(babel: any) {
+  const { types: t, traverse } = babel;
+
+  return {
+    name: "babel-plugin-rename-identifiers",
+    visitor: {
+      Identifier(path: any) {
+        path.node.name = path.node.name.split("").reverse().join("");
+      },
+    },
+  };
+}
+
 test("can interoperate ASTs", () => {
   transformSync(src, {
     babel: {
-      plugins: [logger],
+      plugins: [loggerPluggin, renameIdentifiersPlugin],
     },
   });
-  // assert.is(add(2, 2), 5);
 });
 
 test.run();

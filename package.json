@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@babel/core": "^7.15.5",
+    "@babel/traverse": "^7.15.4",
     "@babel/types": "^7.15.6",
     "@swc/core": "^1.2.85"
   }
