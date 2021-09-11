@@ -1,5 +1,8 @@
 // Copyright (c) 2021 Saddam M. All rights reserved.
+// @ts-nocheck
 import { Module, ParseOptions, parseSync } from "@swc/core";
+import { CallExpression, Expression } from "@swc/core";
+import SWCVisitor from "@swc/core/Visitor.js";
 // @ts-ignore
 import { transformFromAst } from "@babel/core";
 // import { BabelConfig } from "@babel/types";
@@ -9,13 +12,13 @@ export interface InteropConfig {
   babel?: any;
 }
 
-export function interop(ast: Module): Module {
-  console.log(ast);
-  // Step 1: Set type from "Module" to "Program" (standalone scripts).
-  (ast as any).type = "Program";
-  // It is paramount to make a plugin that morphs the AST. The problem
-  // lies with SWC planning to deprecate its ES plugin API for a Rust one.
-  return ast;
+const { default: Visitor } = SWCVisitor;
+
+class InteropVisitor extends Visitor {
+  visitModule(m: Module) {
+    // Step 1: Set type from "Module" to "Program" (standalone scripts).
+    m.type = "Program";
+  }
 }
 
 export function transformSync(
@@ -23,6 +26,8 @@ export function transformSync(
   options: InteropConfig = {}
 ): string {
   const ast = parseSync(src, options.swc);
-  const output = transformFromAst(interop(ast), options.babel || {});
-  return output;
+  new InteropVisitor().visitProgram(ast);
+  console.log(ast);
+  // const output = transformFromAst(ast, options.babel || {});
+  return "output";
 }
