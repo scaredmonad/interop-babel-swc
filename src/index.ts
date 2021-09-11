@@ -6,6 +6,7 @@ import {
   Identifier,
   NumericLiteral,
   VariableDeclaration,
+  AssignmentExpression,
   parseSync,
   transformSync as transformMorphedAST,
 } from "@swc/core";
@@ -44,9 +45,16 @@ class InteropVisitor extends Visitor {
     return lit;
   }
 
-  visitExpressionStatement(e: ExpressionStatement) {
-    interop_mapSpanToLocObject(e);
-    return e;
+  visitAssignmentExpression(
+    a_expr: AssignmentExpression
+  ): AssignmentExpression {
+    interop_mapSpanToLocObject(a_expr);
+    return super.visitAssignmentExpression(a_expr);
+  }
+
+  visitExpressionStatement(expr: ExpressionStatement) {
+    interop_mapSpanToLocObject(expr);
+    return super.visitExpressionStatement(expr);
   }
 }
 
@@ -59,6 +67,8 @@ export function transformSync(
   new InteropVisitor().visitProgram(ast);
   ast.type = "Program";
   interop_mapSpanToLocObject(ast);
+  // console.log(ast.body[1].expression);
+  // return;
   ast = t.file(ast);
 
   // Phase 2: AST Traversal.

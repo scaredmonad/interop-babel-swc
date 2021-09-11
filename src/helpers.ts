@@ -52,7 +52,6 @@ export function interop_reverseAST(ast: Module): Module {
     () => ({
       visitor: {
         enter(path: any) {
-          console.log(path.node.type);
           interop_reverseLocObjectToSpan(path.node);
         },
         Program(path: any) {
