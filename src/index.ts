@@ -15,7 +15,7 @@ import {
   interop_morphIdentifier,
 } from "./helpers.js";
 // @ts-ignore
-import { transformFromAst } from "@babel/core";
+import { transformFromAstSync } from "@babel/core";
 // import { BabelConfig } from "@babel/types";
 
 export interface InteropConfig {
@@ -63,7 +63,7 @@ export function transformSync(
   new InteropVisitor().visitProgram(ast);
   ast.type = "Program";
   interop_mapSpanToLocObject(ast);
-  console.log(ast.body[0].declarations);
-  // const output = transformFromAst(ast, options.babel || {});
+  // console.log(ast.body[0].declarations);
+  const { code } = transformFromAstSync(ast, options.babel);
   return "output";
 }
