@@ -4,8 +4,9 @@ import { test } from "uvu";
 import { transformSync } from "../src/index.js";
 import { transformSync as babel_transformSync } from "@babel/core";
 
-const src = `const digit = 5;
-digit = 9;`;
+const src = `if (a > 5) {
+  console.log(true);
+}`;
 
 // test("benchmark", benchmark);
 test("can interoperate", () => {

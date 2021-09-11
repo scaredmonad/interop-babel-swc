@@ -5,7 +5,9 @@ import {
   Module,
   Identifier,
   NumericLiteral,
+  IfStatement,
   VariableDeclaration,
+  ExpressionStatement,
   AssignmentExpression,
   parseSync,
   transformSync as transformMorphedAST,
@@ -45,11 +47,36 @@ class InteropVisitor extends Visitor {
     return lit;
   }
 
-  visitAssignmentExpression(
-    a_expr: AssignmentExpression
-  ): AssignmentExpression {
-    interop_mapSpanToLocObject(a_expr);
-    return super.visitAssignmentExpression(a_expr);
+  // @TODO: Note this pattern. Reduce this redundancy by either:
+  //    1 - Attaching common methods dynamically (via a constructor).
+  //    2 - Using decorators.
+  // visitAssignmentExpression(
+  //   a_expr: AssignmentExpression
+  // ): AssignmentExpression {
+  //   interop_mapSpanToLocObject(a_expr);
+  //   return super.visitAssignmentExpression(a_expr);
+  // }
+
+  // visitIfStatement(stmt: IfStatement): IfStatement {
+  //   interop_mapSpanToLocObject(stmt);
+  //   return super.visitIfStatement(stmt);
+  // }
+
+  constructor() {
+    super();
+
+    const similarNodes = [
+      "AssignmentExpression",
+      "IfStatement",
+      "BinaryExpression",
+    ];
+
+    for (const tt of similarNodes) {
+      this[`visit${tt}`] = (node: any): any => {
+        interop_mapSpanToLocObject(node);
+        return super[`visit${tt}`](node);
+      };
+    }
   }
 
   visitExpressionStatement(expr: ExpressionStatement) {
@@ -67,8 +94,8 @@ export function transformSync(
   new InteropVisitor().visitProgram(ast);
   ast.type = "Program";
   interop_mapSpanToLocObject(ast);
-  // console.log(ast.body[1].expression);
-  // return;
+  console.log(ast.body);
+  return;
   ast = t.file(ast);
 
   // Phase 2: AST Traversal.
