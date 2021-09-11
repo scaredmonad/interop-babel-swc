@@ -38,12 +38,6 @@ class InteropVisitor extends Visitor {
     return ident;
   }
 
-  visitIdentifier(ident: Identifier): Identifier {
-    interop_mapSpanToLocObject(ident);
-    interop_morphIdentifier(ident);
-    return ident;
-  }
-
   visitNumericLiteral(lit: NumericLiteral): NumericLiteral {
     interop_mapSpanToLocObject(lit);
     return lit;
@@ -64,6 +58,7 @@ export function transformSync(
   ast.type = "Program";
   interop_mapSpanToLocObject(ast);
   // console.log(ast.body[0].declarations);
-  const { code } = transformFromAstSync(ast, options.babel);
+  // /!\ Take note of the order of parameters. Silent errors are imminent.
+  const { code } = transformFromAstSync(ast, src, options.babel);
   return "output";
 }
