@@ -31,12 +31,8 @@ function renameIdentifiersPlugin(babel: any) {
   };
 }
 
-test("can interoperate ASTs", () => {
-  transformSync(src, {
-    babel: {
-      plugins: [loggerPluggin, renameIdentifiersPlugin],
-    },
-  });
+transformSync(src, {
+  babel: {
+    plugins: [loggerPluggin, renameIdentifiersPlugin],
+  },
 });
-
-test.run();
