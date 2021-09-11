@@ -3,7 +3,8 @@ import { test } from "uvu";
 // import * as assert from "uvu/assert";
 import { transformSync } from "../src/index.js";
 
-const src = `const a = 5; console.log(a);`;
+const src = `const a = 5;
+console.log(a);`;
 
 test("can interoperate ASTs", () => {
   transformSync(src, {});
