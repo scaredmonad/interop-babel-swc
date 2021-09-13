@@ -4,11 +4,7 @@ import { test } from "uvu";
 import { transformSync } from "../src/index.js";
 import { transformSync as babel_transformSync } from "@babel/core";
 
-const src = `if (a > 5) {
-  console.log(true);
-} else {
-  alert(false);
-}`;
+const src = `a.push({ alert });`;
 
 // test("benchmark", benchmark);
 test("can interoperate", () => {

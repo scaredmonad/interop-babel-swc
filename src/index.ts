@@ -40,6 +40,15 @@ class InteropVisitor extends Visitor {
     return super.visitBlockStatement(stmt);
   }
 
+  visitCallExpression(expr: CallExpression): CallExpression {
+    interop_mapSpanToLocObject(expr);
+    expr.arguments = expr.arguments.map((arg: any) =>
+      super.visitExpression(arg.expression)
+    );
+
+    return expr;
+  }
+
   constructor() {
     super();
 
@@ -49,6 +58,8 @@ class InteropVisitor extends Visitor {
       "BinaryExpression",
       "NumericLiteral",
       "VariableDeclaration",
+      "MemberExpression",
+      "ObjectExpression",
     ];
 
     for (const tt of identicalImplNodes) {
@@ -75,7 +86,7 @@ export function transformSync(
   new InteropVisitor().visitProgram(ast);
   ast.type = "Program";
   interop_mapSpanToLocObject(ast);
-  console.log(ast.body);
+  console.log(ast.body[0].expression);
   return;
   ast = t.file(ast);
 
