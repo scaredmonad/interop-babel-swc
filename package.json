@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "build": "esbuild --bundle --platform=node --outfile=./lib/index.js --format=esm ./src/index.ts",
-    "test": "node --no-warnings --loader ts-node/esm.mjs ./test/index.ts"
+    "test": "node --stack-trace-limit=0 --no-warnings --loader ts-node/esm.mjs ./test/index.ts"
   },
   "devDependencies": {
     "@types/node": "^16.0.0",

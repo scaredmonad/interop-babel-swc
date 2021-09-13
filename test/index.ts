@@ -4,7 +4,7 @@ import { test } from "uvu";
 import { transformSync } from "../src/index.js";
 import { transformSync as babel_transformSync } from "@babel/core";
 
-const src = `a.push({ alert });`;
+const src = `const a = [0, 1, 2]; a.push({ alert });`;
 
 // test("benchmark", benchmark);
 test("can interoperate", () => {

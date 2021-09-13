@@ -7,7 +7,16 @@ import * as t from "@babel/types";
 
 const { default: traverse } = BabelTraverse;
 
-export function interop_mapSpanToLocObject(node: HasSpan) {
+export function interop_mapSpanToLocObject(
+  node: HasSpan,
+  preserve: boolean = false
+) {
+  if (!node.span) {
+    throw Error(
+      "Interop Error: No SWC-compat `span` found on node: " + (node as any).type
+    );
+  }
+
   const { start, end } = node.span;
 
   (node as any).loc = {
@@ -15,7 +24,7 @@ export function interop_mapSpanToLocObject(node: HasSpan) {
     end: { line: 0, column: end },
   };
 
-  delete (node as any).span;
+  if (!preserve) delete (node as any).span;
 }
 
 export function interop_reverseLocObjectToSpan(node: any) {
@@ -65,6 +74,14 @@ export function interop_reverseAST(ast: Module): Module {
             path.node.arguments = path.node.arguments.map((arg: any) => ({
               spread: null,
               expression: arg,
+            }));
+          },
+        },
+        ArrayExpression: {
+          exit(path: any) {
+            path.node.elements = path.node.elements.map((el: any) => ({
+              spread: null,
+              expression: el,
             }));
           },
         },

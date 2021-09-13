@@ -50,6 +50,23 @@ class InteropVisitor extends Visitor {
     return expr;
   }
 
+  visitVariableDeclarator(vardecl: VariableDeclarator): VariableDeclarator {
+    interop_mapSpanToLocObject(vardecl);
+    interop_mapSpanToLocObject(vardecl.init, true);
+    if (vardecl.init.type !== "ArrayExpression")
+      vardecl.init = super.visitExpression(vardecl.init);
+    return super.visitVariableDeclarator(vardecl);
+  }
+
+  visitArrayExpression(expr: ArrayExpression): ArrayExpression {
+    interop_mapSpanToLocObject(expr);
+    expr.elements = expr.elements.map((el: any) =>
+      super.visitExpression(el.expression)
+    );
+
+    return expr;
+  }
+
   constructor() {
     super();
 
@@ -58,9 +75,10 @@ class InteropVisitor extends Visitor {
       "IfStatement",
       "BinaryExpression",
       "NumericLiteral",
-      "VariableDeclaration",
+      // "VariableDeclaration",
       "MemberExpression",
       "ObjectExpression",
+      // "ArrayExpression",
     ];
 
     for (const tt of identicalImplNodes) {
@@ -87,7 +105,7 @@ export function transformSync(
   new InteropVisitor().visitProgram(ast);
   ast.type = "Program";
   interop_mapSpanToLocObject(ast);
-  // console.log(ast.body[0].expression);
+  // console.log(ast.body[0].declarations);
   // return;
   ast = t.file(ast);
 
@@ -101,8 +119,7 @@ export function transformSync(
   interop_reverseLocObjectToSpan(ast.program);
   // console.log(JSON.stringify(ast.program, null, 2));
   ast.program.type = "Module";
-  const { code } = transformMorphedAST(ast.program, options.swc);
+  const { code, map } = transformMorphedAST(ast.program, options.swc);
   console.log(code);
-
-  return "output";
+  return { code, map };
 }
