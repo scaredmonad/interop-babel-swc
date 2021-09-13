@@ -34,6 +34,8 @@ class InteropVisitor extends Visitor {
   visitBlockStatement(stmt: BlockStatement): BlockStatement {
     interop_mapSpanToLocObject(stmt);
     stmt.body = stmt.stmts;
+    // @TODO: At another stage, use a custom visitor for block
+    // statements that maps `stmt.body` instead of `stmt.stmts`.
     // delete stmt.stmts;
     return super.visitBlockStatement(stmt);
   }
@@ -41,7 +43,7 @@ class InteropVisitor extends Visitor {
   constructor() {
     super();
 
-    const similarNodes = [
+    const identicalImplNodes = [
       "AssignmentExpression",
       "IfStatement",
       "BinaryExpression",
@@ -49,7 +51,7 @@ class InteropVisitor extends Visitor {
       "VariableDeclaration",
     ];
 
-    for (const tt of similarNodes) {
+    for (const tt of identicalImplNodes) {
       this[`visit${tt}`] = (node: any): any => {
         interop_mapSpanToLocObject(node);
         // Refer to https://github.com/swc-project/plugin-strip-console/issues/2

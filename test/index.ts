@@ -6,6 +6,8 @@ import { transformSync as babel_transformSync } from "@babel/core";
 
 const src = `if (a > 5) {
   console.log(true);
+} else {
+  alert(false);
 }`;
 
 // test("benchmark", benchmark);
