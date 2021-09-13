@@ -42,6 +42,7 @@ class InteropVisitor extends Visitor {
 
   visitCallExpression(expr: CallExpression): CallExpression {
     interop_mapSpanToLocObject(expr);
+    expr.callee = super.visitExpression(expr.callee);
     expr.arguments = expr.arguments.map((arg: any) =>
       super.visitExpression(arg.expression)
     );
@@ -86,8 +87,8 @@ export function transformSync(
   new InteropVisitor().visitProgram(ast);
   ast.type = "Program";
   interop_mapSpanToLocObject(ast);
-  console.log(ast.body[0].expression);
-  return;
+  // console.log(ast.body[0].expression);
+  // return;
   ast = t.file(ast);
 
   // Phase 2: AST Traversal.
@@ -98,6 +99,7 @@ export function transformSync(
   // Phase 3: Code generation.
   interop_reverseAST(ast.program);
   interop_reverseLocObjectToSpan(ast.program);
+  // console.log(JSON.stringify(ast.program, null, 2));
   ast.program.type = "Module";
   const { code } = transformMorphedAST(ast.program, options.swc);
   console.log(code);

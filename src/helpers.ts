@@ -60,6 +60,14 @@ export function interop_reverseAST(ast: Module): Module {
         Identifier(path: any) {
           interop_reverseMorphedIdentifier(path.node);
         },
+        CallExpression: {
+          exit(path: any) {
+            path.node.arguments = path.node.arguments.map((arg: any) => ({
+              spread: null,
+              expression: arg,
+            }));
+          },
+        },
       },
     }),
   ]);
