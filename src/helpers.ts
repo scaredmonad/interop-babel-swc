@@ -11,7 +11,8 @@ export function interop_mapSpanToLocObject(
   node: HasSpan,
   preserve: boolean = false
 ) {
-  if (!node.span) {
+  if (!node || !node.span) return;
+  if (!node.span && !(node as any).loc) {
     throw Error(
       "Interop Error: No SWC-compat `span` found on node: " + (node as any).type
     );
@@ -85,6 +86,16 @@ export function interop_reverseAST(ast: Module): Module {
             }));
           },
         },
+        ObjectProperty: {
+          exit(path: any) {
+            path.node.type = "KeyValueProperty";
+          }
+        },
+        FunctionDeclaration: {
+          exit(path: any) {
+            path.node.params = path.node.params.map((pat: any) => ({ type: "Param", pat }));
+          }
+        }
       },
     }),
   ]);

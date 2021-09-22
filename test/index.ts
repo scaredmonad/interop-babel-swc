@@ -1,18 +1,18 @@
 // @ts-nocheck
+import { readFileSync } from "fs";
 import { test } from "uvu";
 // import * as assert from "uvu/assert";
 import { transformSync } from "../src/index.js";
 import { transformSync as babel_transformSync } from "@babel/core";
 
-const src = `const a = [0, 1, 2]; a.push({ alert });`;
-
 // test("benchmark", benchmark);
 test("can interoperate", () => {
-  transformSync(src, {
+  const out = transformSync(readFileSync("./fixtures/basic.js").toString(), {
     babel: {
       plugins: [loggerPluggin, renameIdentifiersPlugin],
     },
   });
+  console.log(out && out.code);
 });
 
 test.run();
