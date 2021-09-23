@@ -3,10 +3,11 @@ import { readFileSync } from "fs";
 import { test } from "uvu";
 // import * as assert from "uvu/assert";
 import { transformSync } from "../src/index.js";
-import { transformSync as babel_transformSync } from "@babel/core";
+import { transformSync as babel_transformSync, parseSync } from "@babel/core";
 
 // test("benchmark", benchmark);
 test("can interoperate", () => {
+  // console.log(JSON.stringify(parseSync(readFileSync("./fixtures/basic.js").toString(), null, 2)))
   const out = transformSync(readFileSync("./fixtures/basic.js").toString(), {
     babel: {
       plugins: [loggerPluggin, renameIdentifiersPlugin],
@@ -58,6 +59,7 @@ function renameIdentifiersPlugin(babel: any) {
     name: "babel-plugin-rename-identifiers",
     visitor: {
       Identifier(path: any) {
+        console.log(path.parent.type);
         path.node.name = path.node.name.split("").reverse().join("");
       },
     },

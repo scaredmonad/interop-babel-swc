@@ -94,6 +94,15 @@ export function interop_reverseAST(ast: Module): Module {
         FunctionDeclaration: {
           exit(path: any) {
             path.node.params = path.node.params.map((pat: any) => ({ type: "Param", pat }));
+            interop_reverseLocObjectToSpan(path.node.id);
+            path.node.identifier = path.node.id;
+            delete path.node.id;
+          }
+        },
+        BlockStatement: {
+          exit(path: any) {
+            path.node.stmts = path.node.body;
+            delete path.node.body;
           }
         }
       },

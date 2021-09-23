@@ -13,6 +13,7 @@ import {
   ExpressionStatement,
   FunctionDeclaration,
   BlockStatement,
+  ReturnStatement,
   transformSync as transformMorphedAST,
 } from "@swc/core";
 import SWCVisitor from "@swc/core/Visitor.js";
@@ -39,13 +40,25 @@ class InteropVisitor extends Visitor {
     return ident;
   }
 
-  visitBlockStatement(stmt: BlockStatement): BlockStatement {
-    interop_mapSpanToLocObject(stmt);
-    stmt.body = stmt.stmts;
+  visitBlockStatement(block: BlockStatement): BlockStatement {
+    interop_mapSpanToLocObject(block);
+    block.stmts = block.stmts.map((node: any) => {
+      if (node.type == "Identifier") {
+        return this.visitIdentifier(node);
+      } else {
+        super.visitExpression(node);
+        console.log(node);
+        return node;
+      }
+    });
+
+    block.body = block.stmts;
+
+    // console.log(JSON.stringify(block.body, null, 2));
     // @TODO: At another stage, use a custom visitor for block
     // statements that maps `stmt.body` instead of `stmt.stmts`.
     // delete stmt.stmts;
-    return super.visitBlockStatement(stmt);
+    return super.visitBlockStatement(block);
   }
 
   visitCallExpression(expr: CallExpression): CallExpression {
@@ -107,21 +120,14 @@ class InteropVisitor extends Visitor {
 
   visitFunctionDeclaration(fndecl: FunctionDeclaration): FunctionDeclaration {
     interop_mapSpanToLocObject(fndecl);
+    fndecl.id = this.visitIdentifier(fndecl.identifier);
+    delete fndecl.identifier;
     fndecl.params = fndecl.params.map((p: any) => {
       this.visitIdentifier(p.pat);
       return p.pat;
     });
-    this.visitBlockStatement(fndecl.body);
-    return (fndecl);
-  }
-
-  visitBlockStatement(block: BlockStatement): BlockStatement {
-    interop_mapSpanToLocObject(block);
-    block.stmts = block.stmts.map((s) => {
-      super.visitExpression(s);
-      return s;
-    });
-    return super.visitBlockStatement(block);
+    // this.visitBlockStatement(fndecl.body);
+    return fndecl;
   }
 
   visitReturnStatement(retstmt: ReturnStatement): ReturnStatement {
@@ -139,6 +145,8 @@ class InteropVisitor extends Visitor {
       "BinaryExpression",
       "NumericLiteral",
       "MemberExpression",
+      "ExpressionStatement",
+      // "BlockStatement"
     ];
 
     for (const tt of identicalImplNodes) {
@@ -150,10 +158,10 @@ class InteropVisitor extends Visitor {
     }
   }
 
-  visitExpressionStatement(expr: ExpressionStatement) {
-    interop_mapSpanToLocObject(expr);
-    return super.visitExpressionStatement(expr);
-  }
+  // visitExpressionStatement(expr: ExpressionStatement) {
+  //   interop_mapSpanToLocObject(expr);
+  //   return super.visitExpressionStatement(expr);
+  // }
 }
 
 export function transformSync(
@@ -165,7 +173,7 @@ export function transformSync(
   new InteropVisitor().visitProgram(ast);
   ast.type = "Program";
   interop_mapSpanToLocObject(ast);
-  // console.log(JSON.stringify(ast.body[3], null, 2));
+  // console.log(JSON.stringify(ast.body[0], null, 2));
   // return;
   ast = t.file(ast);
 
@@ -177,7 +185,7 @@ export function transformSync(
   // Phase 3: Code generation.
   interop_reverseAST(ast.program);
   interop_reverseLocObjectToSpan(ast.program);
-  console.log(JSON.stringify(ast.program, null, 2));
+  console.log(JSON.stringify(ast.program));
   ast.program.type = "Module";
   const { code, map } = transformMorphedAST(ast.program, options.swc);
   // console.log(code);
