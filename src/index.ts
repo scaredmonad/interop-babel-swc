@@ -42,23 +42,11 @@ class InteropVisitor extends Visitor {
 
   visitBlockStatement(block: BlockStatement): BlockStatement {
     interop_mapSpanToLocObject(block);
-    block.stmts = block.stmts.map((node: any) => {
-      if (node.type == "Identifier") {
-        return this.visitIdentifier(node);
-      } else {
-        super.visitExpression(node);
-        console.log(node);
-        return node;
-      }
-    });
-
     block.body = block.stmts;
-
-    // console.log(JSON.stringify(block.body, null, 2));
-    // @TODO: At another stage, use a custom visitor for block
-    // statements that maps `stmt.body` instead of `stmt.stmts`.
     // delete stmt.stmts;
-    return super.visitBlockStatement(block);
+    // This line costed me 3+ hours of debugging.
+    // return super.visitBlockStatement(block);
+    return super.visitExpression(block);
   }
 
   visitCallExpression(expr: CallExpression): CallExpression {
@@ -130,11 +118,11 @@ class InteropVisitor extends Visitor {
     return fndecl;
   }
 
-  visitReturnStatement(retstmt: ReturnStatement): ReturnStatement {
-    interop_mapSpanToLocObject(retstmt);
-    retstmt.argument = super.visitExpression(retstmt.argument);
-    return retstmt;
-  }
+  // visitReturnStatement(retstmt: ReturnStatement): ReturnStatement {
+  //   interop_mapSpanToLocObject(retstmt);
+  //   retstmt.argument = super.visitExpression(retstmt.argument);
+  //   return super.visitExpression(retstmt);
+  // }
 
   constructor() {
     super();
@@ -146,7 +134,8 @@ class InteropVisitor extends Visitor {
       "NumericLiteral",
       "MemberExpression",
       "ExpressionStatement",
-      // "BlockStatement"
+      "CallExpression",
+      "ReturnStatement"
     ];
 
     for (const tt of identicalImplNodes) {
@@ -173,8 +162,8 @@ export function transformSync(
   new InteropVisitor().visitProgram(ast);
   ast.type = "Program";
   interop_mapSpanToLocObject(ast);
-  // console.log(JSON.stringify(ast.body[0], null, 2));
-  // return;
+  console.log(JSON.stringify(ast.body[0], null, 2));
+  return;
   ast = t.file(ast);
 
   // Phase 2: AST Traversal.
